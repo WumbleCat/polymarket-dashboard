@@ -1,5 +1,8 @@
 # Core dependencies
 python-dotenv>=1.0.0
+pandas>=2.0.0
+requests>=2.31.0
+numpy>=1.24.0
 
 # Email dependencies (built-in to Python, no extra packages needed)
 # smtplib, email, ssl are all part of Python standard library

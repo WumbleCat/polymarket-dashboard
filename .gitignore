@@ -1,0 +1,22 @@
+# Virtual environment
+poly_env/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Data files (optional, if you don’t want to commit local CSVs)
+data/
+*.db
+*.sqlite
+*.parquet
+*.csv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-specific junk
+.DS_Store
+Thumbs.db

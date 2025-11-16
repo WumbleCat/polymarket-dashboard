@@ -4,8 +4,12 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "pip install -r requirements.txt && python email/create_html.py",
+    "startCommand": "pip install -r requirements.txt && python railway_generate_report.py",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
+  },
+  "variables": {
+    "PYTHONUNBUFFERED": "1",
+    "POLYMARKET_ADDRESS": "0x22633134dc34f6c9a3bff51a0926c9d209714e26"
   }
 }

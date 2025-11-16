@@ -582,48 +582,84 @@ def create_and_send_report(
 
     # Optionally send email
     if send_email and recipient_email:
-        from gmail_sender import GmailSender
+        try:
+            from gmail_sender import GmailSender
 
-        sender = GmailSender()
+            sender = GmailSender()
 
-        # Read the HTML content
-        with open(html_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
+            # Read the HTML content
+            with open(html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
 
-        # Send email
-        success = sender.send_email(
-            to_emails=recipient_email,
-            subject=f"Polymarket Positions Report - {address[:8]}...",
-            body_html=html_content,
-            body_text="Please view this email in HTML format for the best experience."
-        )
+            # Send email
+            success = sender.send_email(
+                to_emails=recipient_email,
+                subject=f"Polymarket Positions Report - {address[:8]}...",
+                body_html=html_content,
+                body_text="Please view this email in HTML format for the best experience."
+            )
 
-        if success:
-            print(f"Email sent successfully to {recipient_email}")
-        else:
-            print("Failed to send email")
+            if success:
+                print(f"Email sent successfully to {recipient_email}")
+            else:
+                print("Failed to send email")
 
-        return out, success
+            return out, success
+        except ValueError as e:
+            if "GMAIL_EMAIL" in str(e) or "GMAIL_APP_PASSWORD" in str(e):
+                print(f"\n⚠️ Email configuration error: {str(e)}")
+                print("HTML report was generated but email was not sent.")
+                print("To enable email sending, configure environment variables in Railway.")
+                return out, False
+            else:
+                raise
 
     return out, None
 
 
 if __name__ == "__main__":
     import sys
+    import os
+    from pathlib import Path
     from dotenv import load_dotenv
 
-    # Load environment variables
+    # Try multiple methods to load environment variables
+    # Method 1: Load from .env file in parent directory
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"Loaded .env from {env_path}")
+
+    # Method 2: Load from .env in current directory
     load_dotenv()
+
+    # Method 3: Check if running in Railway (Railway sets this)
+    if os.getenv('RAILWAY_ENVIRONMENT'):
+        print("Running in Railway environment")
+
+    # Debug: Print environment variable status (without showing sensitive values)
+    print(f"GMAIL_EMAIL configured: {'Yes' if os.getenv('GMAIL_EMAIL') else 'No'}")
+    print(f"GMAIL_APP_PASSWORD configured: {'Yes' if os.getenv('GMAIL_APP_PASSWORD') else 'No'}")
 
     # Default address
     address = "0x22633134dc34f6c9a3bff51a0926c9d209714e26"
 
     # Check command line arguments
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
         address = sys.argv[1]
 
     # Check if email sending is requested
-    send_email = "--send-email" in sys.argv or "-e" in sys.argv
+    # In Railway, default to NOT sending email unless explicitly requested
+    if os.getenv('RAILWAY_ENVIRONMENT'):
+        # In Railway, only send email if explicitly requested with --send-email flag
+        send_email = "--send-email" in sys.argv or "-e" in sys.argv
+        if not send_email:
+            print("Running in Railway: Generating HTML report only (no email)")
+            print("To send email, use: python email/create_html.py --send-email recipient@example.com")
+    else:
+        # Local environment - check for email flag
+        send_email = "--send-email" in sys.argv or "-e" in sys.argv
+
     recipient = None
 
     if send_email:
@@ -638,11 +674,27 @@ if __name__ == "__main__":
             sys.exit(1)
 
     # Create and optionally send report
-    out, email_sent = create_and_send_report(
-        address=address,
-        recipient_email=recipient,
-        send_email=send_email
-    )
+    try:
+        out, email_sent = create_and_send_report(
+            address=address,
+            recipient_email=recipient,
+            send_email=send_email
+        )
 
-    if email_sent is False:
-        print("\nTip: Make sure GMAIL_EMAIL and GMAIL_APP_PASSWORD are set in .env file")
+        if email_sent is False:
+            print("\nFailed to send email. Check configuration:")
+            print("1. Ensure GMAIL_EMAIL is set in Railway environment variables")
+            print("2. Ensure GMAIL_APP_PASSWORD is set in Railway environment variables")
+            print("3. Check Railway logs for more details")
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        if "GMAIL_EMAIL" in str(e) or "GMAIL_APP_PASSWORD" in str(e):
+            print("\n📧 Email Configuration Required:")
+            print("Please set the following in Railway Service Variables:")
+            print("  GMAIL_EMAIL=your-email@gmail.com")
+            print("  GMAIL_APP_PASSWORD=your-16-char-app-password")
+            print("\nTo set these:")
+            print("1. Go to your Railway service")
+            print("2. Click on 'Variables' tab")
+            print("3. Add the variables above")
+            print("4. Redeploy the service")

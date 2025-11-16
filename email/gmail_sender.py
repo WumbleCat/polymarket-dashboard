@@ -131,9 +131,21 @@ class GmailSender:
 
     def _send_message(self, message: MIMEMultipart, recipients: List[str]) -> bool:
         """Send the email message via SMTP"""
+        import socket
+        import os
+
+        # Check if running in Railway with network restrictions
+        if os.getenv('RAILWAY_ENVIRONMENT'):
+            logger.warning("Running in Railway environment - SMTP may be restricted")
+            logger.warning("Railway's free tier blocks outbound SMTP connections (port 587/465)")
+            logger.warning("Consider upgrading to Railway's paid tier or using an email API service instead")
+
         context = ssl.create_default_context()
 
         try:
+            # Test network connectivity first
+            socket.create_connection((self.config.smtp_server, self.config.smtp_port), timeout=5)
+
             with smtplib.SMTP(self.config.smtp_server, self.config.smtp_port) as server:
                 server.set_debuglevel(0)  # Set to 1 for debugging
 
@@ -152,6 +164,16 @@ class GmailSender:
             logger.info(f"Email sent successfully to {', '.join(recipients)}")
             return True
 
+        except socket.error as e:
+            if "Network is unreachable" in str(e) or e.errno == 101:
+                logger.error("Network is unreachable - SMTP ports may be blocked")
+                logger.error("If running on Railway free tier, SMTP is blocked. Solutions:")
+                logger.error("1. Upgrade to Railway paid tier (Team plan or higher)")
+                logger.error("2. Use an email API service (SendGrid, Mailgun, etc.)")
+                logger.error("3. Run the script locally instead")
+            else:
+                logger.error(f"Network error: {str(e)}")
+            return False
         except smtplib.SMTPAuthenticationError:
             logger.error("SMTP Authentication failed. Check your email and app password.")
             return False

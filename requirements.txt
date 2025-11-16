@@ -1,0 +1,9 @@
+# Core dependencies
+python-dotenv>=1.0.0
+
+# Email dependencies (built-in to Python, no extra packages needed)
+# smtplib, email, ssl are all part of Python standard library
+
+# Optional dependencies for enhanced functionality
+# jinja2>=3.1.2  # For HTML template rendering (if needed)
+# premailer>=3.10.0  # For CSS inlining in HTML emails (if needed)

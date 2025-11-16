@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Polymarket Positions Report</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+
+        /* Email body styles */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #f4f7fa !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif !important;
+        }
+
+        /* Container */
+        .email-container {
+            max-width: 680px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        /* Header styles */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .stats-container {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .stat-item {
+            display: table-cell;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table styles */
+        .positions-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+
+        .positions-table th {
+            background: linear-gradient(135deg, #f6f9fc 0%, #e9ecef 100%);
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e0;
+        }
+
+        .positions-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            font-size: 14px;
+            vertical-align: middle;
+            background-color: #ffffff;
+        }
+
+        /* Alternating row colors */
+        .positions-table tr:nth-child(odd) td {
+            background-color: #fafbfc;
+        }
+
+        /* Hover effect for desktop */
+        .positions-table tr:hover td {
+            background-color: #f0f4f8 !important;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Separator row styling */
+        .separator-row td {
+            padding: 0 !important;
+            height: 3px !important;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border: none !important;
+        }
+
+        /* Market cell styling */
+        .market-wrap {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .market-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .market-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .market-chip {
+            flex-shrink: 0;
+        }
+
+        .title-link {
+            color: #5b21b6;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            display: block;
+        }
+
+        .title-link:hover {
+            color: #7c3aed;
+            text-decoration: underline;
+        }
+
+        .title-text {
+            color: #2d3748;
+            font-weight: 500;
+            font-size: 14px;
+            display: block;
+        }
+
+        /* Position info styling */
+        .position-info {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Chip styling */
+        .chip {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .chip-yes {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .chip-no {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .chip:not(.chip-yes):not(.chip-no) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Value styling */
+        .val {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2d3748;
+        }
+
+        /* PnL styling */
+        .pnl {
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .pnl.pos {
+            color: #10b981;
+        }
+
+        .pnl.neg {
+            color: #ef4444;
+        }
+
+        /* Price columns */
+        .positions-table td:nth-child(2),
+        .positions-table td:nth-child(3) {
+            font-weight: 500;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f8fafc;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .footer-text {
+            color: #718096;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .footer-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .positions-table {
+                padding: 10px;
+            }
+
+            .positions-table th,
+            .positions-table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            .logo {
+                width: 24px;
+                height: 24px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Polymarket Positions Report</h1>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Total Positions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">$1,155</div>
+                    <div class="stat-label">Total Value</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #10b981">
+                        $+440
+                    </div>
+                    <div class="stat-label">Total P&L</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Positions Table -->
+        <table class="positions-table">
+            <thead>
+                <tr>
+                    <th>MARKET</th>
+                    <th style="text-align: center;">AVG</th>
+                    <th style="text-align: center;">CURRENT</th>
+                    <th>VALUE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><div class="market-wrap">
+                <img class="logo" src="https://polymarket-upload.s3.us-east-2.amazonaws.com/will-polymarket-us-go-live-in-2025-dPC-pdwRSMZg.jpg" alt="logo">
+                <div class="market-content">
+                    <div class="market-header">
+                        <div class="market-title"><span class="title-text">Will Polymarket US go live in 2025?</span></div>
+                        <div class="market-chip"><span class="chip chip-no">No</span></div>
+                    </div>
+                    <div class="position-info">4,516.0 shares at 14¢</div>
+                </div>
+            </div></td><td>14¢</td><td>18¢</td><td><div class="val">$803.85</div><div class="sub"><span class="pnl pos">$188.14 (30.56%)</span></div></td></tr>
+<tr><td><div class="market-wrap">
+                <img class="logo" src="https://polymarket-upload.s3.us-east-2.amazonaws.com/mrbeastmoneypile.png" alt="logo">
+                <div class="market-content">
+                    <div class="market-header">
+                        <div class="market-title"><span class="title-text">Will MrBeast hit 460 Million subscribers by December 31?</span></div>
+                        <div class="market-chip"><span class="chip chip-no">No</span></div>
+                    </div>
+                    <div class="position-info">576.3 shares at 17¢</div>
+                </div>
+            </div></td><td>17¢</td><td>61¢</td><td><div class="val">$351.55</div><div class="sub"><span class="pnl pos">$251.55 (251.55%)</span></div></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                Generated on November 16, 2025 at 07:03 PM
+            </p>
+            <p class="footer-text">
+                View on <a href="https://polymarket.com" class="footer-link">Polymarket.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
